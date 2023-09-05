@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: delta
+  namespace: bbp
+  labels:
+    app: delta
+spec:
+  serviceName: delta-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: delta
+  template:
+    metadata:
+      namespace: bbp
+      labels:
+        app: delta
+    spec:
+      containers:
+        - name: delta
+          image: bluebrain/nexus-delta:1.8.0
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: data-delta
+              mountPath: /opt/binaries
+            - name: delta-config
+              mountPath: /opt/appconf
+          env:
+            - name: BIND_INTERFACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: JAVA_OPTS
+              value: '-Xss2m -Xms8g -Xmx8g'
+            - name: DELTA_PLUGINS
+              value: '/opt/docker/plugins/'
+            - name: DELTA_EXTERNAL_CONF
+              value: '/opt/appconf/delta.conf'
+            - name: POSTGRES_PASSWORD
+              value: nnamdi
+            - name: KAMON_ENABLED
+              value: 'true'
+            - name: KAMON_JAEGER_ENABLED
+              value: 'false'
+            - name: ENCRYPTION_PASSWORD
+              value: nnamdi
+            - name: ENCRYPTION_SALT
+              value: nnamdi
+            - name: SA_TOKEN
+              value: nnamdi
+            - name: SA_REALM
+              value: nnamdi
+            - name: SA_SUBJECT
+              value: nnamdi
+            - name: ELASTICSEARCH_USERNAME
+              value: "nexus-user"
+            - name: ELASTICSEARCH_PASSWORD
+              value: nnamdi
+            - name: JIRA_CONSUMER_KEY
+              value: nnamdi
+            - name: JIRA_CONSUMER_SECRET
+              value: nnamdi
+            - name: JIRA_PRIVATE_KEY
+              value: nnamdi
+          workingDir: '/tmp'
+          command:
+            - '/bin/bash'
+            - '-c'
+            - >
+              /opt/docker/bin/delta-app
+              -Dakka.http.client.parsing.max-content-length="100g"
+              -Dakka.http.host-connection-pool.max-open-requests=128
+              -Dakka.http.host-connection-pool.response-entity-subscription-timeout="15.seconds"
+              -Dakka.http.server.parsing.max-content-length="2MiB"
+              -Dapp.defaults.database.password="$POSTGRES_PASSWORD"
+              -Dapp.encryption.password="$ENCRYPTION_PASSWORD"
+              -Dapp.encryption.salt="$ENCRYPTION_SALT"
+              -Dapp.http.interface="$BIND_INTERFACE"
+              -Dapp.service-account.subject="$SA_SUBJECT"
+              -Dapp.service-account.realm="$SA_REALM"
+              -Dplugins.elasticsearch.credentials.username="$ELASTICSEARCH_USERNAME"
+              -Dplugins.elasticsearch.credentials.password="$ELASTICSEARCH_PASSWORD"
+              -Dplugins.jira.consumer-key="$JIRA_CONSUMER_KEY"
+              -Dplugins.jira.secret="$JIRA_CONSUMER_SECRET"
+              -Dplugins.jira.private-key="$JIRA_PRIVATE_KEY"
+              -Dplugins.storage.storages.remote-disk.default-credentials="$SA_TOKEN"
+              -Djavax.net.ssl.trustStore="/opt/cacerts"
+              -Djavax.net.ssl.trustStorePassword=""
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+            - containerPort: 9095
+              name: prometheus
+              protocol: TCP
+      volumes:
+        - name: data-delta
+          persistentVolumeClaim:
+            claimName: data-delta
+        - name: delta-config
+          configMap:
+            name: delta-config
+      terminationGracePeriodSeconds: 30
+  volumeClaimTemplates:
+      - metadata:
+          name: data-delta
+        spec:
+          storageClassName: managed-csi
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10Gi
