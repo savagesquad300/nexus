@@ -13,7 +13,7 @@ To view the values file run the command below
 $helm show values keycloak keycloak/keycloak
 You can edit the values file to what you want it to look like 
 thus you have to save the values content to a new file using the command below
-$helm show values keycloak keycloak/keycloak >> keycloakvalues.yaml
+$helm show values keycloak keycloak/keycloak >> keycloak.values
 I have uploaded a values file where I have already configured the environmental vatriables you will need to deploy keycloak using this helm chart
 If the helm values file is broken, add this following lines to the env variables section
 change "" to |
@@ -24,7 +24,7 @@ admin
 Use whatever username and password you want.
 also note that this helm deployment automatically comes with postgres configured and installed as a stateful set 
 to install the helm chart with the values file already created use the command below
-$helm install keycloak keycloak/keycloak --values keycloakvalues.yaml
+$helm install keycloak keycloak/keycloak --values keycloak.values
 After the installation, you will have to expose the keycloak-http service
 Thus change it from a cluster ip to a NodePort 
 use $kubectl edit svc keycloak-http
