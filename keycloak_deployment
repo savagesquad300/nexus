@@ -10,7 +10,7 @@ you can view the available charts using
 $helm search repo keycloak
 use keycloak/keycloak
 To view the values file run the command below
-$helm show values keycloak keycloak/keycloak
+$helm show values keycloak/keycloak
 You can edit the values file to what you want it to look like 
 thus you have to save the values content to a new file using the command below
 $helm show values keycloak keycloak/keycloak >> keycloak.values
