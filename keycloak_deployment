@@ -7,7 +7,7 @@ To deploy using helm, use the helm repo specified below
 use $helm repo add keycloak  https://codecentric.github.io/helm-charts
 to add the repo to your local helm repository
 you can view the available charts using
-$helm repo search keycloak
+$helm search repo keycloak
 use keycloak/keycloak
 To view the values file run the command below
 $helm show values keycloak keycloak/keycloak
