@@ -33,7 +33,8 @@ note that it uses vi as the editor
 thus, use 's' to edit the file
 use 'esc' then ':wq' to save and quit
 Then you can sign in using admin, admin as username and password respectively as configured in the environment variables
-
+ When creating an ingress for keycloak, make sure to add the path /auth 
+add this as a constant because it was declared in the helm values file
 
 
  
